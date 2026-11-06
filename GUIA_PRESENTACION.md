@@ -9,6 +9,9 @@ probado dos veces en vivo y funciona.
 - Servidores corriendo: `docker compose up -d`, `npm run dev` en `server/` y
   `npm run dev -- --host 0.0.0.0` en `client/`.
 - Navegador en `http://localhost:5173` (pantalla completa, zoom 100%).
+- Respaldo: el portal también está publicado en
+  https://informatica-destaca.vercel.app por si localhost falla en vivo
+  (ver `DEPLOY.md`).
 - Tener a la mano las cuentas de prueba (ver `MANUAL_DE_USUARIO.md`).
 - Si algo falla en vivo: no improvises con la base de datos; muestra la
   vista pública ya cargada y explica el paso con el manual.
@@ -84,8 +87,10 @@ evaluadores con acceso propio. Invita preguntas.
 - **¿Los datos son reales?** Los 5 estudiantes del Cuadro de Honor son
   reales y con autorización; el resto de los datos del seed son de ejemplo
   (los ganadores 2022–2024 se sustituirán por los reales).
-- **¿Dónde está publicada?** En localhost para la demostración; la guía de
-  publicación está en `DEPLOY.md` (Render + Vercel).
+- **¿Dónde está publicada?** En https://informatica-destaca.vercel.app
+  (API en Render). La demostración en vivo se hace en localhost para no
+  ensuciar los datos publicados; si localhost falla, la URL pública sirve
+  como respaldo.
 - **¿Qué pasa si un evaluador califica dos veces?** Se actualiza su
   calificación; no se duplica (una por evaluador y proyecto).
 - **¿Funciona en el celular?** Sí, el diseño es responsivo y el menú se
