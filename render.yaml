@@ -1,0 +1,25 @@
+# Blueprint de Render: backend (Node + Express) + PostgreSQL.
+# Uso: en Render, New -> Blueprint -> conecta este repositorio.
+# El esquema se aplica una sola vez con `npx prisma db push` contra la
+# External Database URL (ver DEPLOY.md); no usa migraciones, para no chocar
+# con la migración init que ya existe en la base local de desarrollo.
+services:
+  - type: web
+    name: informatica-destaca-api
+    runtime: node
+    rootDir: server
+    buildCommand: npm install && npx prisma generate
+    startCommand: npm run start
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: informatica-destaca-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CLIENT_URL
+        # Actualizar con la URL pública de Vercel cuando exista.
+        value: https://informatica-destaca.vercel.app
+databases:
+  - name: informatica-destaca-db
+    plan: free

@@ -1,0 +1,186 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  CONTENT_MANAGER
+  STUDENT
+  EVALUATOR
+}
+
+enum EventStatus {
+  UPCOMING
+  COMPLETED
+  CANCELLED
+}
+
+enum ParticipationType {
+  ATTENDEE
+  SPEAKER
+  CONTESTANT
+  ORGANIZER
+  COLLABORATOR
+  OTHER
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  LINK
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         Role      @default(STUDENT)
+  createdAt    DateTime  @default(now())
+  student      Student?
+  evaluations  Evaluation[]
+}
+
+model Student {
+  id               Int             @id @default(autoincrement())
+  publicName       String
+  photoUrl         String?
+  avatarUrl        String?
+  semester         Int?
+  generation       String?
+  academicStatus   String?
+  bio              String?
+  interests        String[]        @default([])
+  skills           String[]        @default([])
+  consentToPublish Boolean         @default(false)
+  userId           Int?            @unique
+  user             User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt        DateTime        @default(now())
+  participations   Participation[]
+  achievements     Achievement[]
+  projects         Project[]
+  certifications   Certification[]
+  media            Media[]
+}
+
+model Event {
+  id             Int             @id @default(autoincrement())
+  title          String
+  description    String?
+  date           DateTime
+  time           String?
+  place          String?
+  modality       String?
+  organizer      String?
+  category       String?
+  imageUrl       String?
+  status         EventStatus     @default(UPCOMING)
+  createdAt      DateTime        @default(now())
+  participations Participation[]
+  media          Media[]
+}
+
+model Participation {
+  id          Int            @id @default(autoincrement())
+  studentId   Int
+  student     Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  eventId     Int
+  event       Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  date        DateTime       @default(now())
+  type        ParticipationType @default(ATTENDEE)
+  description String?
+  result      String?
+  evidenceUrl String?
+  status      ApprovalStatus @default(PENDING)
+  createdAt   DateTime       @default(now())
+  evaluations Evaluation[]
+
+  @@unique([studentId, eventId, type])
+}
+
+model Achievement {
+  id            Int            @id @default(autoincrement())
+  studentId     Int
+  student       Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  category      String
+  title         String
+  description   String?
+  date          DateTime
+  relatedEvent  String?
+  institution   String?
+  evidenceUrl   String?
+  evidenceType  MediaType?
+  status        ApprovalStatus @default(PENDING)
+  createdAt     DateTime       @default(now())
+  media         Media[]
+}
+
+model Project {
+  id           Int      @id @default(autoincrement())
+  studentId    Int
+  student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  title        String
+  description  String?
+  url          String?
+  technologies String[] @default([])
+  createdAt    DateTime @default(now())
+}
+
+model Certification {
+  id        Int      @id @default(autoincrement())
+  studentId Int
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  title     String
+  issuer    String?
+  date      DateTime
+  url       String?
+  createdAt DateTime @default(now())
+}
+
+// Evaluación de un proyecto concursante de un certamen, registrada por un
+// evaluador (rol EVALUATOR). Un evaluador tiene una sola calificación por
+// participación (puede actualizarla); el admin consulta todas.
+model Evaluation {
+  id              Int           @id @default(autoincrement())
+  evaluatorId     Int
+  evaluator       User          @relation(fields: [evaluatorId], references: [id], onDelete: Cascade)
+  participationId Int
+  participation   Participation @relation(fields: [participationId], references: [id], onDelete: Cascade)
+  score           Float
+  observations    String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([evaluatorId, participationId])
+}
+
+model Media {
+  id               Int        @id @default(autoincrement())
+  title            String
+  description      String?
+  date             DateTime   @default(now())
+  type             MediaType  @default(IMAGE)
+  url              String
+  eventId          Int?
+  event            Event?     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  studentId        Int?
+  student          Student?   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  achievementId    Int?
+  achievement      Achievement? @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  consentToPublish Boolean    @default(false)
+  createdAt        DateTime   @default(now())
+}
